@@ -1,4 +1,4 @@
-rand_utils
+rand_genomics_utils
 ======
 
 *Utility scripts for random common tasks in genomics* 

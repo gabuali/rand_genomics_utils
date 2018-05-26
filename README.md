@@ -11,7 +11,7 @@ Repository of scripts without a common theme, for performing various tasks in co
 
 #### Script genbank_to_tsv.py
 
-Parse genbank record and convert to tab-delimited file.
+Python script to parse genbank record and convert to tab-delimited file.
 Tested on bacterial genbank records, both complete and draft.
 Feature qualifiers specific to eukaryotic records are not captured here but can 
 easily be added.
@@ -37,7 +37,7 @@ required named arguments:
 
 #### Script SNVs_from_alignmnt2.pl
 
-Parse SNVs from multiple sequence alignment (MSA) of genes.  This script parses fasta-formatted nucleotide sequence alignments of genes, and outputs tab-delimited SNVs and nucleotide positions for each sequence along with amino acid translations showing synonymous or non-synonymous changes.  It randomly takes the first sequence in the MSA as the reference and SNVs in all other sequences are called with respect to that reference sequence. 
+Perl script to parse SNVs from multiple sequence alignment (MSA) of genes from e.g. clustalo or your favorite gene MSA algorithm.  This script expects the MSA to be FASTA formatted. The script parses nucleotide sequence alignments of genes to output tab-delimited SNVs and nucleotide positions for each sequence along with amino acid translations showing synonymous or non-synonymous changes.  It randomly takes the first sequence in the MSA as the reference and SNVs in all other sequences are called with respect to that reference sequence.  The script will take 
 
 
 ```

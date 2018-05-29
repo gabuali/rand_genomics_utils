@@ -44,3 +44,12 @@ Perl script to parse SNVs from multiple sequence alignment (MSA) of genes from e
 Usage:
 SNVs_from_alignmnt2.pl MSA.fasta > MSA_SNVs.tsv
 ```
+#### Script gbk2fasta_protein.py
+
+Python script to extract gene amino acid translations from GENBANK file and format as FASTA.  Header contains gene locus_tag, protein ID, and functional characterization.
+
+
+```
+Usage:
+gbk2fasta_protein.py filename.gbk > filename.faa
+```

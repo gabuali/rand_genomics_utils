@@ -2,7 +2,7 @@
 
 
 # Created:               17-05-2018                  gabuali
-# Last Modified:         Fri May 18 07:36:27 2018    gabuali
+# Last Modified:         Mon May 28 17:19:28 2018    gabuali
 
 # Parse genbank record and convert to tab-delimited file.
 # Tested on bacterial genbank records, both complete and draft.
@@ -36,7 +36,7 @@ if __name__ == '__main__':
 out_file = args.outfile
 
 # header line for output table
-header = "\t".join(['Locus_tag', 'Type', 'Contig', 'Contig_length', 'Start', 'End', 'Length', 'Strand', 'Inference', 'Note', 'Codon_start', 'Translation_table', 'Product', 'Protein_ID', 'Translation', 'DNA_sequence', "\n"])
+header = "\t".join(['Locus_tag', 'Type', 'Contig', 'Contig_length', 'Start', 'End', 'Length', 'Strand', 'Inference', 'Note', 'Codon_start', 'Translation_table', 'Product', 'Protein_ID', 'EC_number', 'Translation', 'DNA_sequence', "\n"])
 
 out_file.write(header)
 
@@ -54,7 +54,7 @@ for rec in recs:
     print( len(recs) )                # number of extracted contigs or sequence records
     organism = rec.description          # DEFINITION field
     if 'accessions' in rec.annotations.keys():
-        acc = rec.annotations['accessions']
+        acc = rec.annotations['accessions'][0]
     else:
         acc = 'NA'
 
@@ -63,6 +63,7 @@ for rec in recs:
     else:
         ver = 'NA'
 
+    ver = str(ver)
     acc_ver = '.'.join([acc, ver])      # VERSION field - most recent accession number
 
     print( organism )
@@ -126,6 +127,11 @@ for rec in recs:
                 else:
                     protein_id = 'NA'
 
+                if 'EC_number' in feat.qualifiers.keys():
+                    ec_number = feat.qualifiers['EC_number'][0]
+                else:
+                    ec_number = 'NA'
+
                 if 'translation' in feat.qualifiers.keys():
                     translation = feat.qualifiers['translation'][0] # aa sequence
                 else:
@@ -133,7 +139,7 @@ for rec in recs:
 
 
                 # join features into tab-separated line
-                line_out = "\t".join([ locus, f_type, contig, str(contig_len), str(start), str(end), str(length), strand, inference, note, str(codon_start), str(transl_table), product, protein_id, translation, seq, "\n" ])
+                line_out = "\t".join([ locus, f_type, contig, str(contig_len), str(start), str(end), str(length), strand, inference, note, str(codon_start), str(transl_table), product, protein_id, ec_number, translation, seq, "\n" ])
                 # print to file
                 out_file.write(line_out)
 

@@ -14,7 +14,7 @@ import os
 from Bio import SeqIO
 
 
-# The if condition will execute argparse only if script (module) is run directly,
+# The if condition will execute argparse only if script (module) is run directly from the CLI,
 # and not when imported into another program.
 if __name__ == '__main__':
     # define input args and parse them from the command line

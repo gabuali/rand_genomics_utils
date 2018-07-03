@@ -2,7 +2,7 @@
 
 
 # Created:               17-05-2018                  gabuali
-# Last Modified:         Fri Jun 29 17:05:29 2018    gabuali
+# Last Modified:         Tue Jul  3 12:37:56 2018    gabuali
 
 # Parse genbank record and convert to tab-delimited file.
 # Tested on bacterial genbank records, both complete and draft.
@@ -104,7 +104,7 @@ for rec in recs:
                     # feature coordinates
                     start = str( list( new_compound_components )[0] ).strip('(+)')
                     end = str( list( new_compound_components )[-1] ).strip('(+)')
-
+                    # Notify on STDOUT that genome has compound location(s)  
                     print( "\t".join( [ "Compound location!!!", start, end ] ) )
 
                     length = len(seq)

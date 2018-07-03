@@ -2,7 +2,7 @@
 
 
 # Created:               17-05-2018                  gabuali
-# Last Modified:         Mon May 28 17:19:28 2018    gabuali
+# Last Modified:         Fri Jun 29 17:05:29 2018    gabuali
 
 # Parse genbank record and convert to tab-delimited file.
 # Tested on bacterial genbank records, both complete and draft.
@@ -12,9 +12,10 @@
 import argparse
 import os
 from Bio import SeqIO
+from Bio.SeqFeature import SeqFeature, FeatureLocation, CompoundLocation
 
 
-# The if condition will execute argparse only if script (module) is run directly from the CLI,
+# The if condition will execute argparse only if script (module) is run directly,
 # and not when imported into another program.
 if __name__ == '__main__':
     # define input args and parse them from the command line
@@ -36,7 +37,8 @@ if __name__ == '__main__':
 out_file = args.outfile
 
 # header line for output table
-header = "\t".join(['Locus_tag', 'Type', 'Contig', 'Contig_length', 'Start', 'End', 'Length', 'Strand', 'Inference', 'Note', 'Codon_start', 'Translation_table', 'Product', 'Protein_ID', 'EC_number', 'Translation', 'DNA_sequence', "\n"])
+header = "\t".join(['Locus_tag', 'Type', 'Contig', 'Contig_length', 'Start', 'End', 'Length', 'Strand', 'Inference', 'Note', 'Codon_start', 'Translation_table', 'Product', 'Protein_ID', 'EC_number', 'Translation', 'DNA_sequence'])
+header += "\n"
 
 out_file.write(header)
 
@@ -80,12 +82,36 @@ for rec in recs:
             if feat.type not in skip:
                 seq = feat.location.extract(rec).seq # sequence
                 strand = str(feat.strand)
-                if strand == '-1': # rev_com if opposite strand
-                    seq = seq.reverse_complement()
+                # NOTE: no need to revcom -1 strand, 
+                # parsing seqs always gives seqs in +1 direction
+                #if strand == '-1': # rev_com if opposite strand
+                #    seq = seq.reverse_complement()
                 seq = str(seq)
-                start = int( feat.location.nofuzzy_start ) # start, end coordinates
-                end = int( feat.location.nofuzzy_end )
-                length = len(seq)
+
+                # The below chunk is taken from 
+                # https://github.com/biopython/biopython/issues/901
+                # for when you a have a compound location e.g. join(320152..321744,1..336)
+                # that spans the origin.
+                # See here
+                # https://github.com/biopython/biopython/issues/895
+
+                if len(feat.location.parts) > 1:
+                    new_compound_components = []
+                    for subfeature in feat.location.parts:
+                        new_compound_components.append(subfeature)
+                    feat.location = CompoundLocation(sorted(new_compound_components, key=lambda loc: loc.start))
+
+                    # feature coordinates
+                    start = str( list( new_compound_components )[0] ).strip('(+)')
+                    end = str( list( new_compound_components )[-1] ).strip('(+)')
+
+                    print( "\t".join( [ "Compound location!!!", start, end ] ) )
+
+                    length = len(seq)
+                else:
+                    start = int( feat.location.start ) + 1 # add 1 to offset 0-based indexing  for start
+                    end = int( feat.location.end )
+                    length = len(seq)
 
                 # feature type
                 f_type = feat.type # feature type (e.g. CDS, rRNA, etc.)
@@ -139,7 +165,8 @@ for rec in recs:
 
 
                 # join features into tab-separated line
-                line_out = "\t".join([ locus, f_type, contig, str(contig_len), str(start), str(end), str(length), strand, inference, note, str(codon_start), str(transl_table), product, protein_id, ec_number, translation, seq, "\n" ])
+                line_out = "\t".join([ locus, f_type, contig, str(contig_len), str(start), str(end), str(length), strand, inference, note, str(codon_start), str(transl_table), product, protein_id, ec_number, translation, seq ])
+                line_out += "\n"
                 # print to file
                 out_file.write(line_out)
 

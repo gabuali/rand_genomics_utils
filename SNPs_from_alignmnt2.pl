@@ -22,6 +22,10 @@ my %snps3; # key-value = position in alignment-position in reference gene.
 while( <> ) {
     chomp; # it chomps "\n>", not just \n because of $/
     next if ! length($_);
+   
+    # Initialize below variable with 0, for strains with no SNPs wrt reference
+    # so can print all strains, including those with no SNPs
+    $snp_cnt{ $sbjct_count } = 0; 
     
     if( $flag == 1 ) {
         # get name and sequence for each subject strain
@@ -40,6 +44,7 @@ while( <> ) {
 				$snps2->{ $aln_pos }{ substr( $sbjct_seq, $i, 1 ) }++; # count SNPs at each position
 			}
 		}
+
         ++$sbjct_count; # increment strain number
     } 
     else {

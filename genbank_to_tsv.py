@@ -2,7 +2,7 @@
 
 
 # Created:               17-05-2018                  gabuali
-# Last Modified:         Tue Jul  3 12:37:56 2018    gabuali
+# Last Modified:         Fri Jun 29 17:05:29 2018    gabuali
 
 # Parse genbank record and convert to tab-delimited file.
 # Tested on bacterial genbank records, both complete and draft.
@@ -11,6 +11,7 @@
 
 import argparse
 import os
+import re
 from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation, CompoundLocation
 
@@ -37,7 +38,7 @@ if __name__ == '__main__':
 out_file = args.outfile
 
 # header line for output table
-header = "\t".join(['Locus_tag', 'Type', 'Contig', 'Contig_length', 'Start', 'End', 'Length', 'Strand', 'Inference', 'Note', 'Codon_start', 'Translation_table', 'Product', 'Protein_ID', 'EC_number', 'Translation', 'DNA_sequence'])
+header = "\t".join(['Locus_tag', 'Type', 'Gene', 'Contig', 'Contig_length', 'Start', 'End', 'Length', 'Strand', 'Inference', 'Note', 'Codon_start', 'Translation_table', 'Product', 'Protein_ID', 'UniProtKB/Swiss-Prot', 'EC_number', 'Translation', 'DNA_sequence'])
 header += "\n"
 
 out_file.write(header)
@@ -48,8 +49,8 @@ out_file.write(header)
 recs = [ rec for rec in SeqIO.parse( args.infile, "genbank" ) ]
 
 # iterate over each sequence record (contig in draft genome) and extract info,
-# skipping features source, gene, operon
-skip = [ 'source', 'gene', 'operon' ]
+# skipping features source, gene, operon, misc_feature
+skip = [ 'source', 'gene', 'operon', 'misc_feature' ]
 for rec in recs:
 
 # NOTE that Main features, eg  accession No, etc. are NOT provided in Prokka annotations
@@ -75,7 +76,7 @@ for rec in recs:
     contig_len = len( rec.seq )         # contig length
 
     if rec.features:
-        # get all the features in a given contig skipping source, gene, operon
+        # get all the features in a given contig skipping source, gene, operon, misc_feature
         feats = rec.features
 
         for feat in feats:
@@ -104,7 +105,7 @@ for rec in recs:
                     # feature coordinates
                     start = str( list( new_compound_components )[0] ).strip('(+)')
                     end = str( list( new_compound_components )[-1] ).strip('(+)')
-                    # Notify on STDOUT that genome has compound location(s)  
+
                     print( "\t".join( [ "Compound location!!!", start, end ] ) )
 
                     length = len(seq)
@@ -122,6 +123,11 @@ for rec in recs:
                     locus = feat.qualifiers['locus_tag'][0] # locus_tag
                 else:
                     locus = 'NA'
+                    
+                if 'gene' in feat.qualifiers.keys():
+                    gene = feat.qualifiers['gene'][0] # gene name
+                else:
+                    gene = 'NA'
 
                 if 'inference' in feat.qualifiers.keys():
                     inference = feat.qualifiers['inference'][0] # annotation tool
@@ -152,6 +158,18 @@ for rec in recs:
                     protein_id = feat.qualifiers['protein_id'][0]
                 else:
                     protein_id = 'NA'
+                
+                if 'db_xref' in feat.qualifiers.keys():			# UniProtKB/Swiss-Prot
+                    db_xref_list = feat.qualifiers['db_xref']
+                    uniprot = [ i for i in db_xref_list if i.startswith('UniProtKB') ] # list variable
+                    
+                    if not uniprot: # empty list
+                    	uniprot = 'NA'
+                    else:
+                    	uniprot = str(uniprot[0]) # apply str() on element and not on list
+                    	uniprot = re.sub( "UniProtKB\/Swiss-Prot\:", "", uniprot) # delete prefix
+                else:
+                    uniprot = 'NA'
 
                 if 'EC_number' in feat.qualifiers.keys():
                     ec_number = feat.qualifiers['EC_number'][0]
@@ -165,7 +183,7 @@ for rec in recs:
 
 
                 # join features into tab-separated line
-                line_out = "\t".join([ locus, f_type, contig, str(contig_len), str(start), str(end), str(length), strand, inference, note, str(codon_start), str(transl_table), product, protein_id, ec_number, translation, seq ])
+                line_out = "\t".join([ locus, f_type, gene, contig, str(contig_len), str(start), str(end), str(length), strand, inference, note, str(codon_start), str(transl_table), product, protein_id, uniprot, ec_number, translation, seq ])
                 line_out += "\n"
                 # print to file
                 out_file.write(line_out)
